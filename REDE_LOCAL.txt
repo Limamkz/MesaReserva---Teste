@@ -1,0 +1,33 @@
+MESARESERVA — ACESSO A PARTIR DE OUTROS COMPUTADORES (XAMPP)
+===========================================================
+
+1. No computador que hospeda o site, coloque a pasta do projeto em:
+   C:\xampp\htdocs\MesaReserva
+
+2. Abra o XAMPP e inicie Apache e MySQL. Teste no servidor:
+   http://localhost/MesaReserva/
+
+3. No servidor, clique com o botão direito em iniciar-rede-local.bat e escolha
+   “Executar como administrador”. O arquivo cria regras do Firewall do Windows
+   para o Apache nas portas comuns 80, 8080 e 443, apenas na rede privada.
+
+4. No Windows, abra Configurações > Rede e Internet > Wi-Fi/Ethernet > sua rede
+   e marque o perfil como Privado. Permita o Apache HTTP Server no Firewall,
+   somente em redes privadas.
+
+5. Descubra o IPv4 do servidor executando `ipconfig` no Prompt de Comando. Exemplo:
+   IPv4 192.168.1.25 -> no outro PC abra http://192.168.1.25/MesaReserva/
+   Use o IPv4 real do servidor, não o exemplo. Se o Apache usa a porta 8080,
+   o endereço será http://192.168.1.25:8080/MesaReserva/.
+
+6. O outro PC precisa estar na mesma rede local. Redes de convidados podem impedir
+   comunicação entre dispositivos. Não use localhost no outro PC: localhost aponta
+   para o próprio dispositivo. O computador servidor deve ficar ligado com Apache
+   e MySQL iniciados.
+
+7. Se ainda não abrir, no servidor verifique a porta do Apache em
+   C:\xampp\apache\conf\httpd.conf (linha “Listen”), teste se o site abre
+   pelo IP do próprio servidor e confira se o roteador tem isolamento de clientes
+   Wi-Fi ativado. Não desative o Firewall inteiro e não exponha o MySQL à rede.
+
+Este procedimento libera acesso somente na rede local; não publica o site na Internet.

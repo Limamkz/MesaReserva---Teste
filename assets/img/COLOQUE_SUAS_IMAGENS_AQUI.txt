@@ -1,0 +1,13 @@
+COLOQUE AQUI AS DUAS IMAGENS DO PROJETO
+
+1. logo.png
+   Logo do MesaReserva. É usada automaticamente onde o projeto exibe a logo.
+
+2. hero.png
+   Imagem principal de fundo. É usada automaticamente nas áreas hero da
+   página inicial, login, área do cliente e página institucional.
+
+Não é necessário editar os arquivos PHP para trocar essas imagens.
+Mantenha exatamente estes nomes:
+    logo.png
+    hero.png
