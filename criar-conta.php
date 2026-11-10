@@ -2,9 +2,53 @@
 declare(strict_types=1); require_once __DIR__.'/includes/functions.php';
 if(is_logged_in()) redirect(is_admin()?'dashboard.php':'cliente.php');
 $error=null; $tipo=$_POST['tipo']??'cliente';
-if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$nome=trim($_POST['nome']??'');$email=trim($_POST['email']??'');$senha=$_POST['senha']??'';$conf=$_POST['confirmacao']??'';$tipo=$_POST['tipo']??'cliente';$chave=$_POST['chave_admin']??'';
-if(empty($_POST['aceita_privacidade']))$error='Você precisa aceitar a Política de Privacidade para criar sua conta.';elseif(mb_strlen($nome)<3)$error='Digite um nome válido.';elseif(!filter_var($email,FILTER_VALIDATE_EMAIL))$error='Digite um e-mail válido.';elseif(strlen($senha)<8)$error='A senha precisa ter pelo menos 8 caracteres.';elseif($senha!==$conf)$error='As senhas não coincidem.';elseif(!in_array($tipo,['admin','cliente'],true))$error='Tipo de acesso inválido.';elseif($tipo==='admin'&&$chave!=='@MesaReserva_231009')$error='A chave administrativa informada está incorreta.';else{
-try{$pdo->beginTransaction();$check=$pdo->prepare('SELECT id FROM usuarios WHERE email=? LIMIT 1');$check->execute([$email]);if($check->fetch())throw new RuntimeException('Este e-mail já está cadastrado.');$clienteId=null;if($tipo==='cliente'){$s=$pdo->prepare('INSERT INTO clientes(nome,email) VALUES(?,?)');$s->execute([$nome,$email]);$clienteId=(int)$pdo->lastInsertId();}$token=verification_token();$s=$pdo->prepare('INSERT INTO usuarios(nome,email,senha,tipo,cliente_id,token_verificacao,token_expira_em) VALUES(?,?,?,?,?,?,DATE_ADD(NOW(),INTERVAL 24 HOUR))');$s->execute([$nome,$email,password_hash($senha,PASSWORD_DEFAULT),$tipo,$clienteId,verification_hash($token)]);$pdo->commit();$_SESSION['verification_email']=$email;try{send_verification_email($nome,$email,$token);$_SESSION['verification_sent']=true;}catch(Throwable $mailError){$_SESSION['verification_sent']=false;$_SESSION['verification_mail_error']=$mailError->getMessage();}redirect('verificar-email.php?created=1');}catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$error=$e instanceof RuntimeException?$e->getMessage():'Não foi possível criar a conta.';}}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    $nome = trim($_POST['nome'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $senha = $_POST['senha'] ?? '';
+    $conf = $_POST['confirmacao'] ?? '';
+    $tipo = $_POST['tipo'] ?? 'cliente';
+    $chave = $_POST['chave_admin'] ?? '';
+
+    if (empty($_POST['aceita_privacidade'])) $error = 'Você precisa aceitar a Política de Privacidade para criar sua conta.';
+    elseif (mb_strlen($nome) < 3) $error = 'Digite um nome válido.';
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $error = 'Digite um e-mail válido.';
+    elseif (strlen($senha) < 8) $error = 'A senha precisa ter pelo menos 8 caracteres.';
+    elseif ($senha !== $conf) $error = 'As senhas não coincidem.';
+    elseif (!in_array($tipo, ['admin', 'cliente'], true)) $error = 'Tipo de acesso inválido.';
+    elseif ($tipo === 'admin' && $chave !== '@MesaReserva_231009') $error = 'A chave administrativa informada está incorreta.';
+    else {
+        try {
+            $check = $pdo->prepare('SELECT id FROM clientes WHERE email = ? UNION SELECT id FROM administradores WHERE email = ? LIMIT 1');
+            $check->execute([$email, $email]);
+            if ($check->fetch()) throw new RuntimeException('Este e-mail já está cadastrado.');
+
+            // Até a confirmação, nome, e-mail e senha ficam somente em arquivo temporário protegido.
+            $token = verification_token();
+            $registration = [
+                'nome' => $nome,
+                'email' => $email,
+                'senha' => password_hash($senha, PASSWORD_DEFAULT),
+                'tipo' => $tipo,
+                'expires_at' => time() + 86400,
+            ];
+            save_pending_registration($token, $registration);
+            $_SESSION['verification_email'] = $email;
+            $_SESSION['verification_type'] = $tipo;
+            $_SESSION['verification_token'] = $token;
+            try {
+                send_verification_email($nome, $email, $token);
+                $_SESSION['verification_sent'] = true;
+            } catch (Throwable $mailError) {
+                $_SESSION['verification_sent'] = false;
+                $_SESSION['verification_mail_error'] = $mailError->getMessage();
+            }
+            redirect('verificar-email.php?created=1');
+        } catch (Throwable $e) {
+            $error = $e instanceof RuntimeException ? $e->getMessage() : 'Não foi possível criar a conta.';
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -16,9 +60,9 @@ try{$pdo->beginTransaction();$check=$pdo->prepare('SELECT id FROM usuarios WHERE
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0..200&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="<?= url('assets/css/style.css?v=20261008painel3') ?>">
+        <link rel="stylesheet" href="<?= url('assets/css/style.css?v=20261110signup1') ?>">
     </head>
-    <body class="auth-page">
+    <body class="auth-page signup-auth-page">
         <div class="login-page">
             <section class="login-visual">
                 <div class="login-copy">
@@ -81,8 +125,9 @@ try{$pdo->beginTransaction();$check=$pdo->prepare('SELECT id FROM usuarios WHERE
                     </div>
                     <div class="form-group">
                         <label for="senha">Senha</label>
-                        <div class="password-wrap">
+                        <div class="password-wrap password-input-wrap signup-password-wrap">
                             <input id="senha" class="form-control" type="password" name="senha" minlength="8" autocomplete="new-password" required>
+                            <button class="password-visibility-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false" data-password-target="senha"><span class="material-symbols-outlined">visibility</span></button>
                         </div>
                     </div>
                     <div class="password-rules" id="passwordRules">
@@ -96,15 +141,16 @@ try{$pdo->beginTransaction();$check=$pdo->prepare('SELECT id FROM usuarios WHERE
                                             </div>
                                             <div class="form-group">
                                                 <label for="confirmacao">Confirmar senha</label>
-                                                <div class="password-wrap">
+                                                <div class="password-wrap password-input-wrap signup-password-wrap">
                                                     <input id="confirmacao" class="form-control" type="password" name="confirmacao" minlength="8" autocomplete="new-password" required>
+                                                    <button class="password-visibility-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false" data-password-target="confirmacao"><span class="material-symbols-outlined">visibility</span></button>
                                                 </div>
                                                 <div id="passwordMatch" class="password-match">
                                                 </div>
                                             </div>
                                             <div class="form-group admin-key-field" id="adminKey">
                                                 <label>Chave de cadastro administrativo</label>
-                                                <input class="form-control" type="password" name="chave_admin" placeholder="Digite a chave fornecida pelo restaurante">
+                                                <div class="password-input-wrap signup-password-wrap"><input id="chaveAdminInput" class="form-control" type="password" name="chave_admin" placeholder="Digite a chave fornecida pelo restaurante"><button class="password-visibility-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false" data-password-target="chaveAdminInput"><span class="material-symbols-outlined">visibility</span></button></div>
                                                 <small>Necessária somente para criar uma conta de administrador.</small>
                                             </div>
                                             <label class="privacy-consent signup-privacy" for="aceita-privacidade"><input id="aceita-privacidade" type="checkbox" name="aceita_privacidade" value="1" required <?= !empty($_POST['aceita_privacidade']) ? 'checked' : '' ?>> <span>Li e aceito as <a href="<?= url('privacidade.php') ?>">Políticas de Privacidade</a>.</span></label>
@@ -118,6 +164,17 @@ try{$pdo->beginTransaction();$check=$pdo->prepare('SELECT id FROM usuarios WHERE
                                 </section>
                             </div>
                             <script>
+                                document.querySelectorAll('[data-password-target]').forEach((toggleButton) => {
+                                    const target = document.getElementById(toggleButton.dataset.passwordTarget);
+                                    if (!target) return;
+                                    toggleButton.addEventListener('click', () => {
+                                        const visible = target.type === 'password';
+                                        target.type = visible ? 'text' : 'password';
+                                        toggleButton.setAttribute('aria-pressed', visible ? 'true' : 'false');
+                                        toggleButton.setAttribute('aria-label', visible ? 'Ocultar senha' : 'Mostrar senha');
+                                        toggleButton.querySelector('.material-symbols-outlined').textContent = visible ? 'visibility_off' : 'visibility';
+                                    });
+                                });
                                 const radios = document.querySelectorAll('input[name=tipo]');
                                 const key = document.getElementById('adminKey');
                                 const senha = document.getElementById('senha');

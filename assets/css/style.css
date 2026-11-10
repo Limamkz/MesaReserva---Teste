@@ -5918,3 +5918,91 @@ textarea.form-control {
 .signup-privacy a { color:#c27632 !important; font-weight:800; text-decoration:none; border-bottom:1px solid currentColor; }
 .signup-privacy a:hover { color:#98551f !important; }
 @media(max-width:520px) { .reset-password-box { padding:25px 19px; } }
+
+
+/* Área de exclusão de conta */
+.account-danger-card { border: 1px solid #f0d1cd; margin-top: 22px; }
+.account-danger-card .card-header h3 { color: #a52b24; }
+.account-danger-card .card-body > p { color: #756b63; font-size: 13px; line-height: 1.65; max-width: 760px; }
+.account-danger-card .form-group { max-width: 420px; margin: 16px 0; }
+.account-danger-card .btn-danger { display: inline-flex; align-items: center; gap: 7px; background: #b8322a; color: #fff; border: 1px solid #b8322a; }
+.account-danger-card .btn-danger:hover { background: #98251f; }
+
+
+/* MesaReserva — ajustes finais solicitados em 10/11/2026 */
+/* O controle de visibilidade fica sempre encostado à direita do campo de senha. */
+.auth-page .password-input-wrap { position: relative; display: flex; align-items: center; width: 100%; }
+.auth-page .password-input-wrap .input-leading-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
+.auth-page .password-input-wrap .form-control { width: 100%; padding-left: 40px !important; padding-right: 48px !important; }
+.auth-page .password-visibility-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 3; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 9px; background: transparent; color: #8d8072; cursor: pointer; }
+.auth-page .password-visibility-toggle:hover { background: #f2eadf; color: #6f5a43; }
+.auth-page .password-visibility-toggle .material-symbols-outlined { position: static; font-size: 19px; line-height: 1; }
+.auth-page .password-input-wrap input::-ms-reveal { display: none; }
+
+/* Cadastro mais compacto: menos espaço entre os campos e aceite discreto, sem bloco laranja. */
+.signup-auth-page .login-welcome { margin-bottom: 17px; }
+.signup-auth-page .login-box form > .form-group { margin-bottom: 9px; }
+.signup-auth-page .access-switch { margin-bottom: 15px; }
+.signup-auth-page .password-rules { margin-top: -2px; margin-bottom: 10px; padding: 9px 12px; }
+.signup-auth-page .admin-key-field { margin-top: 2px; padding: 11px 13px; }
+.signup-auth-page .signup-privacy { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; margin: 7px 0 9px; padding: 3px 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: #655b50; font-size: 12px; line-height: 1.4; }
+.signup-auth-page .signup-privacy input { width: 16px; height: 16px; flex: 0 0 16px; margin: 0; accent-color: #a8753d; cursor: pointer; }
+.signup-auth-page .signup-privacy span { flex: 1; color: #655b50; }
+.signup-auth-page .signup-privacy a { color: #a56b32 !important; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; border: 0; }
+.signup-auth-page .signup-privacy a:hover { color: #805021 !important; }
+.signup-auth-page .login-submit { margin-top: 3px; }
+@media (max-width: 560px) {
+    .signup-auth-page .login-box form > .form-group { margin-bottom: 8px; }
+    .signup-auth-page .signup-privacy { margin: 6px 0 8px; }
+}
+
+
+/* Correção definitiva dos controles de senha no login e cadastro. */
+.auth-page .password-input-wrap,
+.signup-auth-page .password-wrap.password-input-wrap {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    min-width: 0;
+}
+.auth-page .password-input-wrap > .form-control,
+.signup-auth-page .password-wrap.password-input-wrap > .form-control {
+    width: 100% !important;
+    min-width: 0;
+    box-sizing: border-box;
+    padding-right: 50px !important;
+}
+.auth-page .password-input-wrap > .password-visibility-toggle,
+.signup-auth-page .password-wrap.password-input-wrap > .password-visibility-toggle {
+    position: absolute !important;
+    top: 50% !important;
+    right: 7px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    z-index: 5;
+    cursor: pointer;
+}
+.auth-page .password-input-wrap > .password-visibility-toggle .material-symbols-outlined,
+.signup-auth-page .password-wrap.password-input-wrap > .password-visibility-toggle .material-symbols-outlined {
+    position: static !important;
+    transform: none !important;
+    line-height: 1 !important;
+    font-size: 20px !important;
+}
+.auth-page input[type="password"]::-ms-reveal,
+.auth-page input[type="text"]::-ms-clear { display: none; }
+.signup-auth-page .password-wrap.password-input-wrap > .form-control { padding-left: 13px !important; }
+.signup-auth-page .admin-key-field .signup-password-wrap { width: 100%; }

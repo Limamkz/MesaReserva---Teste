@@ -11,12 +11,11 @@
         <link rel="stylesheet" href="<?= url('assets/css/style.css?v=20261008painel3') ?>">
     </head>
     <body class="institutional-body">
-        <header class="institutional-nav">
-            <a href="<?= url() ?>">
-                <img src="<?= url('assets/img/logo.png') ?>" alt="MesaReserva">
-            </a>
-        <a class="btn btn-light btn-sm" href="<?= url('index.php') ?>">Voltar ao início</a>
-    </header>
+        <header class="public-nav">
+            <a href="<?= url() ?>" class="public-brand"><img src="<?= url('assets/img/logo.png') ?>" alt="MesaReserva"></a>
+            <nav><a href="<?= url('index.php#sobre') ?>">Sobre</a><a href="<?= url('index.php#experiencia') ?>">Experiência</a><a href="<?= url('index.php#avaliacoes') ?>">Avaliações</a><a href="<?= url('privacidade.php') ?>">Privacidade</a></nav>
+            <div class="public-actions"><a class="btn btn-light btn-sm" href="<?= url('login.php') ?>">Entrar</a><a class="btn btn-primary btn-sm" href="<?= url('login.php') ?>">Reservar mesa</a></div>
+        </header>
     <section class="institutional-hero">
         <div class="institutional-hero-inner">
             <span class="section-kicker">ESSÊNCIA MESARESERVA</span>

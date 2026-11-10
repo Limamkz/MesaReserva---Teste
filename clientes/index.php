@@ -5,10 +5,10 @@ require_admin();
 $pageTitle = 'Clientes';
 $clientes = $pdo->query(
     "SELECT c.id, c.nome, c.telefone, c.email, c.created_at,
-            u.id AS usuario_id, u.ativo, u.tipo,
+            IF(c.senha IS NOT NULL, c.id, NULL) AS usuario_id, c.ativo, IF(c.senha IS NOT NULL, 'cliente', NULL) AS tipo,
             (SELECT COUNT(*) FROM reservas r WHERE r.cliente_id = c.id) AS reservas_count
      FROM clientes c
-     LEFT JOIN usuarios u ON u.cliente_id = c.id
+     
      ORDER BY c.nome"
 )->fetchAll();
 require __DIR__ . '/../partials/header.php';
@@ -73,7 +73,7 @@ require __DIR__ . '/../partials/header.php';
         <img src="<?= url('assets/img/logo.png') ?>" alt="MesaReserva" class="admin-key-logo">
         <span class="admin-key-kicker">PERMISSÃO ADMINISTRATIVA</span>
         <h3 id="adminKeyTitle">Tornar administrador</h3>
-        <p id="adminKeyDescription">Digite a chave administrativa para confirmar a alteração desta conta.</p>
+        <p id="adminKeyDescription">Ao confirmar, a conta será movida de clientes para administradores. Reservas, perguntas e avaliações vinculadas ao cadastro de cliente serão removidas. Digite a chave administrativa para continuar.</p>
         <form method="post" action="<?= url('clientes/promover-admin.php') ?>" class="admin-key-form">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
             <input type="hidden" name="cliente_id" id="adminModalClientId" value="">
@@ -95,7 +95,7 @@ require __DIR__ . '/../partials/header.php';
     const close = () => { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden', 'true'); document.body.classList.remove('admin-modal-open'); };
     document.querySelectorAll('.promote-admin-trigger').forEach(button => button.addEventListener('click', () => {
         idField.value = button.dataset.clientId;
-        description.textContent = `Digite a chave administrativa para tornar ${button.dataset.clientName} administrador.`;
+        description.textContent = `Ao confirmar, ${button.dataset.clientName} será movido de clientes para administradores. Os registros de reservas, perguntas e avaliações vinculados ao cadastro de cliente serão removidos. Digite a chave administrativa para continuar.`;
         modal.classList.add('is-open'); modal.setAttribute('aria-hidden', 'false'); document.body.classList.add('admin-modal-open');
         window.setTimeout(() => keyField.focus(), 80);
     }));

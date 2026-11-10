@@ -1,4 +1,4 @@
-<?php declare(strict_types=1); require_once __DIR__.'/../config/admin_guard.php';$pageTitle='Avaliações';$stats=$pdo->query("SELECT COUNT(*) total,COALESCE(AVG(nota),0) media FROM avaliacoes")->fetch();$items=$pdo->query("SELECT a.*,u.nome FROM avaliacoes a INNER JOIN usuarios u ON u.id=a.usuario_id ORDER BY a.created_at DESC")->fetchAll();require __DIR__.'/../partials/header.php'; ?>
+<?php declare(strict_types=1); require_once __DIR__.'/../config/admin_guard.php';$pageTitle='Avaliações';$stats=$pdo->query("SELECT COUNT(*) total,COALESCE(AVG(nota),0) media FROM avaliacoes")->fetch();$items=$pdo->query("SELECT a.*,u.nome FROM avaliacoes a INNER JOIN clientes u ON u.id=a.cliente_id ORDER BY a.created_at DESC")->fetchAll();require __DIR__.'/../partials/header.php'; ?>
 <div class="page-heading">
     <div>
         <h2>Avaliações dos clientes</h2>

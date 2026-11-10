@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/includes/functions.php';
 $available=available_tables_count($pdo);
-$reviews=$pdo->query("SELECT a.nota,a.comentario,u.nome FROM avaliacoes a INNER JOIN usuarios u ON u.id=a.usuario_id WHERE a.aprovado=1 ORDER BY a.created_at DESC LIMIT 3")->fetchAll();
+$reviews=$pdo->query("SELECT a.nota,a.comentario,u.nome FROM avaliacoes a INNER JOIN clientes u ON u.id=a.cliente_id WHERE a.aprovado=1 ORDER BY a.created_at DESC LIMIT 3")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

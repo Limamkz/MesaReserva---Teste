@@ -6,8 +6,7 @@ require_admin();
 $pageTitle = 'Administradores';
 $admins = $pdo->query(
     "SELECT id, nome, email, ativo, email_verificado_em, created_at
-     FROM usuarios
-     WHERE tipo = 'admin'
+     FROM administradores
      ORDER BY nome"
 )->fetchAll();
 

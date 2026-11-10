@@ -8,12 +8,10 @@ $userId = current_user_id();
 $isClient = is_cliente();
 $error = null;
 
-$stmt = $pdo->prepare(
-    "SELECT u.id, u.nome, u.email, u.tipo, u.avatar, c.telefone
-     FROM usuarios u
-     LEFT JOIN clientes c ON c.id = u.cliente_id
-     WHERE u.id = ? LIMIT 1"
-);
+$table = $isClient ? 'clientes' : 'administradores';
+$table = $isClient ? 'clientes' : 'administradores';
+$telefoneSelect = $isClient ? 'telefone' : 'NULL AS telefone';
+$stmt = $pdo->prepare("SELECT id,nome,email,avatar,{$telefoneSelect} FROM {$table} WHERE id=? LIMIT 1");
 $stmt->execute([$userId]);
 $perfil = $stmt->fetch();
 
@@ -27,13 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'alterar
     $atual = (string)($_POST['senha_atual'] ?? '');
     $nova = (string)($_POST['nova_senha'] ?? '');
     $confirmar = (string)($_POST['confirmar_senha'] ?? '');
-    $check = $pdo->prepare('SELECT senha FROM usuarios WHERE id=?');
+    $check = $pdo->prepare("SELECT senha FROM {$table} WHERE id=?");
     $check->execute([$userId]); $hashAtual = (string)$check->fetchColumn();
     if (!password_verify($atual, $hashAtual)) $error = 'A senha atual está incorreta.';
     elseif (strlen($nova) < 8) $error = 'A nova senha deve ter pelo menos 8 caracteres.';
     elseif ($nova !== $confirmar) $error = 'A confirmação da nova senha não confere.';
     else {
-        $pdo->prepare('UPDATE usuarios SET senha=? WHERE id=?')->execute([password_hash($nova, PASSWORD_DEFAULT), $userId]);
+        $pdo->prepare("UPDATE {$table} SET senha=? WHERE id=?")->execute([password_hash($nova, PASSWORD_DEFAULT), $userId]);
         flash('success', 'Senha alterada com sucesso.');
         redirect('perfil.php');
     }
@@ -91,11 +89,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'alterar
 
             $pdo->beginTransaction();
 
-            $stmt = $pdo->prepare('UPDATE usuarios SET nome = ?, avatar = ? WHERE id = ?');
+            $stmt = $pdo->prepare("UPDATE {$table} SET nome = ?, avatar = ? WHERE id = ?");
             $stmt->execute([$nome, $newAvatar, $userId]);
 
             if ($isClient && !empty($perfil['id'])) {
-                $stmt = $pdo->prepare('UPDATE clientes SET nome = ?, telefone = ? WHERE id = (SELECT cliente_id FROM usuarios WHERE id = ?)');
+                $stmt = $pdo->prepare('UPDATE clientes SET nome = ?, telefone = ? WHERE id = ?');
                 $stmt->execute([$nome, $telefone !== '' ? $telefone : null, $userId]);
             }
 
@@ -217,6 +215,18 @@ require __DIR__ . ($isClient ? '/partials/client-header.php' : '/partials/header
         <div class="form-group"><label>Confirmar nova senha</label><input class="form-control" type="password" name="confirmar_senha" minlength="8" required></div>
         <div class="form-actions full"><button class="btn btn-primary" type="submit">Alterar senha</button></div>
     </form></div>
+</section>
+
+<section class="card account-danger-card">
+    <div class="card-header"><div><h3>Excluir conta</h3><span>Remova seu acesso ao MesaReserva.</span></div></div>
+    <div class="card-body">
+        <p>Confirme sua senha para solicitar a exclusão. Se houver reservas vinculadas, seus dados pessoais serão anonimizados para preservar o histórico das reservas.</p>
+        <form method="post" action="<?= url('excluir-conta.php') ?>" onsubmit="return confirm('Tem certeza de que deseja excluir sua conta? Esta ação não poderá ser desfeita.');">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <div class="form-group"><label>Confirme sua senha</label><input class="form-control" type="password" name="senha_atual" autocomplete="current-password" required></div>
+            <button class="btn btn-danger" type="submit"><span class="material-symbols-outlined">delete_forever</span> Excluir minha conta</button>
+        </form>
+    </div>
 </section>
 </div>
 <?php require __DIR__ . '/partials/footer.php'; ?>

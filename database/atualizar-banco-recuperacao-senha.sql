@@ -1,4 +1,2 @@
-USE MesaReserva;
-ALTER TABLE usuarios
-    ADD COLUMN IF NOT EXISTS token_redefinicao_senha CHAR(64) NULL,
-    ADD COLUMN IF NOT EXISTS token_redefinicao_expira DATETIME NULL;
+-- A recuperação de senha é criada automaticamente para administradores e clientes.
+-- Campos: token_redefinicao_senha e token_redefinicao_expira.

@@ -174,11 +174,53 @@ throw $e;
 }
 }
 
+
+/** Armazena cadastros ainda não verificados fora do banco de dados. */
+function pending_verification_dir(): string
+{
+    $dir = dirname(__DIR__) . '/storage/pending-verifications';
+    if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
+        throw new RuntimeException('Não foi possível preparar a confirmação de e-mail.');
+    }
+    return $dir;
+}
+
+function save_pending_registration(string $token, array $registration): void
+{
+    $path = pending_verification_dir() . '/' . hash('sha256', $token) . '.json';
+    $payload = json_encode($registration, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($payload === false || file_put_contents($path, $payload, LOCK_EX) === false) {
+        throw new RuntimeException('Não foi possível salvar temporariamente o cadastro.');
+    }
+    @chmod($path, 0600);
+}
+
+function get_pending_registration(string $token): ?array
+{
+    if (!preg_match('/^[a-f0-9]{64}$/i', $token)) return null;
+    $path = pending_verification_dir() . '/' . hash('sha256', $token) . '.json';
+    if (!is_file($path)) return null;
+    $data = json_decode((string)file_get_contents($path), true);
+    if (!is_array($data) || empty($data['expires_at']) || (int)$data['expires_at'] < time()) {
+        @unlink($path);
+        return null;
+    }
+    return $data;
+}
+
+function delete_pending_registration(string $token): void
+{
+    if (preg_match('/^[a-f0-9]{64}$/i', $token)) {
+        $path = pending_verification_dir() . '/' . hash('sha256', $token) . '.json';
+        if (is_file($path)) @unlink($path);
+    }
+}
+
 function send_verification_email(string $nome, string $email, string $token): bool
 {
 $link = rtrim(verification_base_url(), '/') . '/verificar-email.php?token=' . urlencode($token);
 $subject = 'Confirme seu e-mail — MesaReserva';
-$message = "Olá, {$nome}!\n\nSua conta no MesaReserva foi criada com sucesso. Para ativá-la, confirme seu e-mail acessando:\n\n{$link}\n\nEste link é válido por 24 horas. Se você não criou esta conta, ignore esta mensagem.\n\nMesaReserva\nSua mesa, seu horário, sua reserva.";
+$message = "Olá, {$nome}!\n\nRecebemos sua solicitação de cadastro no MesaReserva. Seus dados só serão gravados na conta do sistema depois que você confirmar este endereço de e-mail.\n\nPara confirmar, abra o link abaixo (de preferência na mesma guia do navegador):\n\n{$link}\n\nEste link é válido por 24 horas e pode ser usado uma única vez. Se você não solicitou o cadastro, ignore esta mensagem.\n\nMesaReserva\nSua mesa, seu horário, sua reserva.";
 return send_smtp_mail($email, $subject, $message);
 }
 
@@ -221,7 +263,8 @@ function current_user_avatar(): ?string
     global $pdo;
 
     try {
-        $stmt = $pdo->prepare('SELECT avatar FROM usuarios WHERE id = ? LIMIT 1');
+        $table = is_admin() ? 'administradores' : 'clientes';
+        $stmt = $pdo->prepare("SELECT avatar FROM {$table} WHERE id = ? LIMIT 1");
         $stmt->execute([current_user_id()]);
         $avatar = $stmt->fetchColumn();
         return $avatar ? (string)$avatar : null;

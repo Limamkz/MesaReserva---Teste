@@ -45,3 +45,18 @@ SEGURANÇA
 - CSRF
 - Sessões regeneradas no login
 - Tokens de verificação armazenados como SHA-256
+
+
+ATUALIZAÇÃO DO BANCO (NOV/2026)
+- Faça backup do banco MesaReserva antes de atualizar o projeto.
+- Ao abrir o site, config/database.php migra contas antigas da tabela usuarios para administradores e clientes, atualizando perguntas e avaliações antes de remover usuarios.
+- Para instalação nova, importe database/mesareserva.sql.
+- Administradores ficam em administradores; contas e dados de clientes ficam em clientes.
+- A recuperação de senha funciona para os dois tipos de conta e o link expira em 1 hora.
+
+
+CONFIRMACAO DE CADASTRO (ATUALIZACAO)
+- Antes da confirmação do e-mail, os dados do cadastro ficam temporariamente em storage/pending-verifications e NÃO são inseridos nas tabelas clientes ou administradores.
+- Depois de clicar no link válido, o cadastro é gravado exclusivamente na tabela correspondente.
+- A pasta storage é protegida por .htaccess. Em hospedagens que não respeitam .htaccess, configure essa pasta fora da raiz pública do site.
+- Os links internos do MesaReserva navegam na mesma guia. A abertura de um link a partir do Gmail/Outlook pode criar outra guia conforme a configuração do navegador ou do próprio serviço de e-mail; uma página PHP não pode fechar uma guia que foi aberta externamente.

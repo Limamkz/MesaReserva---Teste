@@ -1,0 +1,6 @@
+-- Migração executada automaticamente por config/database.php ao abrir o site.
+-- Faça backup do banco antes de executar qualquer migração manual.
+-- Clientes permanecem exclusivamente em clientes e administradores exclusivamente em administradores.
+-- A rotina copia contas antigas conforme o tipo, atualiza os relacionamentos legados,
+-- remove duplicidades entre clientes/administradores e elimina a tabela antiga usuarios.
+-- A exclusão de contas remove também reservas, perguntas e avaliações vinculadas ao cadastro.
